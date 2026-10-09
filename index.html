@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Add album to MusicBox</title>
+<style>
+:root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{max-width:34rem;margin:0 auto;padding:3rem 1.3rem;line-height:1.5}h1{font-size:1.6rem}a.button{display:inline-block;background:#1865d8;color:white;padding:.85rem 1.2rem;border-radius:.75rem;text-decoration:none;font-weight:600}p{color:inherit}small{opacity:.7}#status{margin-bottom:1.5rem}#fallback{display:none}code{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<h1>Add album to MusicBox</h1>
+<p id="status">Preparing your Shortcut…</p>
+<p><a class="button" id="launch" href="#" hidden>Open Shortcut</a></p>
+<p id="fallback">If the Shortcut doesn't open automatically, tap the button above. iOS may ask for confirmation.</p>
+<small>This page does not collect or store album information. It only passes the supplied Spotify album URL to your existing Shortcut.</small>
+<script>
+(function(){
+  'use strict';
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('url');
+  const status = document.getElementById('status');
+  if (!raw) { status.textContent = 'No album link supplied. Open this page using a digest album link.'; return; }
+  let url;
+  try { url = new URL(raw); } catch { status.textContent='Invalid album link.'; return; }
+  const validHost = url.hostname === 'open.spotify.com';
+  const validPath = /^\/album\/[A-Za-z0-9]+\/?$/.test(url.pathname);
+  if (url.protocol !== 'https:' || !validHost || !validPath) { status.textContent='This launcher only accepts Spotify album links.'; return; }
+  const cleanSpotifyUrl = 'https://open.spotify.com' + url.pathname.replace(/\/$/, '');
+  const shortcut = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Add Album to MusicBox') + '&input=text&text=' + encodeURIComponent(cleanSpotifyUrl);
+  const button = document.getElementById('launch');
+  button.href = shortcut;
+  button.hidden = false;
+  document.getElementById('fallback').style.display = 'block';
+  status.textContent = 'Opening Add Album to MusicBox…';
+  // Some iOS browsers require a user gesture. The visible link is the fallback.
+  window.location.href = shortcut;
+})();
+</script>
+</body>
+</html>
